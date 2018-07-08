@@ -1,0 +1,33 @@
+#!/bin/bash
+
+gcc main.c -o main -ldl -Wall
+gcc portapotty.c -o override/libexamplefn.so -fPIC -shared -ldl -D_GNU_SOURCE -Wall
+gcc example.c -o libexamplefn.so -fPIC -shared -ldl -D_GNU_SOURCE -Wall
+
+sudo ln -sf "$(pwd)/libexamplefn.so" /usr/lib/libexamplefn.so
+
+./main
+
+# Doesn't work
+echo "Doesn't call my lib"
+LD_PRELOAD="$(pwd)/override/libexamplefn.so" ./main
+echo
+
+echo "Fails to load their's"
+LD_LIBRARY_PATH="$(pwd)/override/" ./main
+echo
+
+echo "Doesn't call my lib"
+LD_LIBRARY_PATH="$(pwd)/override/" LD_PRELOAD="$(pwd)/override/libexamplefn.so" ./main
+echo
+
+echo "Fails to load their's"
+LD_LIBRARY_PATH="$(pwd)/override/" LD_PRELOAD="/usr/lib/libexamplefn.so" ./main
+echo
+
+echo "Fails to load their's"
+LD_LIBRARY_PATH="$(pwd)/override/" LD_PRELOAD="/usr/lib/libexamplefn.so $(pwd)/override/libexamplefn.so" ./main
+echo
+
+echo "Works... wtf????"
+LD_LIBRARY_PATH="$(pwd)/override/" LD_PRELOAD="$(pwd)/override/libexamplefn.so /usr/lib/libexamplefn.so" ./main
