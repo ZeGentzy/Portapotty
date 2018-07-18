@@ -1,18 +1,18 @@
 #!/bin/bash
 
-gcc main.c -o main -ldl -Wall
-gcc portapotty.c -o override/libexamplefn.so -fPIC -shared -ldl -D_GNU_SOURCE -Wall
-gcc example.c -o libexamplefn.so -fPIC -shared -ldl -D_GNU_SOURCE -Wall
+mkdir -p override
 
+gcc example.c -o libexamplefn.so -fPIC -shared -ldl -D_GNU_SOURCE -Wall
 sudo ln -sf "$(pwd)/libexamplefn.so" /usr/lib/libexamplefn.so
 
-./main
-echo
+gcc main.c -o main1 -ldl -Wall -lexamplefn
+gcc main.c -o main2 -ldl -Wall -DDLSYM_LIBEXAMPLEFN
 
-echo "Doesn't..."
-LD_LIBRARY_PATH="$(pwd)/override/" ./main
-echo
+gcc example-stub.c -o override/libexamplefn-stub.so -fPIC -shared -Wall
+gcc portapotty.c -o override/libexamplefn.so -fPIC -shared -ldl -D_GNU_SOURCE -Wall -lexamplefn-stub -Loverride
 
-echo "Works..."
-LD_LIBRARY_PATH="$(pwd)/override/" LD_PRELOAD="/usr/lib/libexamplefn.so" ./main
+rm override/libexamplefn-stub.so
+ln -sf "/lib/libexamplefn.so" "override/libexamplefn-stub.so"
 
+LD_LIBRARY_PATH="$(pwd)/override/" ./main1
+LD_LIBRARY_PATH="$(pwd)/override/" ./main2

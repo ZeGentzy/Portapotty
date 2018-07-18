@@ -4,6 +4,7 @@
 #include <dlfcn.h>
 
 void ExampleFn(const char* data);
+void ExampleFn2(const char* data);
 
 int main()
 {
@@ -17,8 +18,13 @@ int main()
 
     dlerror();
 
+#ifdef DLSYM_LIBEXAMPLEFN
     void (*ExampleFn)(const char*);
     *(void **) (&ExampleFn) = dlsym(handle, "ExampleFn");
+
+    void (*ExampleFn2)(const char*);
+    *(void **) (&ExampleFn2) = dlsym(handle, "ExampleFn2");
+#endif
 
     char *error;
     if ((error = dlerror()) != NULL)  {
@@ -26,7 +32,9 @@ int main()
         exit(EXIT_FAILURE);
     }
 
+    ExampleFn2("Hi2P");
     ExampleFn("Hi");
+    ExampleFn2("Hi2");
     printf("SUCCESS, shuting down\n");
 
     dlclose(handle);
