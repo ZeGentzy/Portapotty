@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <dlfcn.h>
 
+int c = 0;
+
 void ExampleFn(const char* data)
 {
     static void (*fptr_ExampleFn)(const char*) = NULL;
@@ -14,6 +16,7 @@ void ExampleFn(const char* data)
         }
     }
 
-    printf("Process %d called ExampleFN for %s\n", getpid(), data);
+    printf("Process %d called ExampleFN for %s, %i\n", getpid(), data, c);
+    ++c;
     return fptr_ExampleFn(data);
 }
